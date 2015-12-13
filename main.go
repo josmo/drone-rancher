@@ -92,23 +92,23 @@ func main() {
 	}
 
 	if !found {
-			fmt.Printf("Unable to find service %s\n", vargs.Service)
-			os.Exit(1)
+		fmt.Printf("Unable to find service %s\n", vargs.Service)
+		os.Exit(1)
 	}
 
 	service.LaunchConfig.ImageUuid = vargs.Image
 	upgrade := &client.ServiceUpgrade{}
 	upgrade.InServiceStrategy = &client.InServiceUpgradeStrategy{
-		LaunchConfig: service.LaunchConfig,
+		LaunchConfig:           service.LaunchConfig,
 		SecondaryLaunchConfigs: service.SecondaryLaunchConfigs,
-		StartFirst: vargs.StartFirst,
+		StartFirst:             vargs.StartFirst,
 	}
 	upgrade.ToServiceStrategy = &client.ToServiceUpgradeStrategy{}
 
 	_, err = rancher.Service.ActionUpgrade(&service, upgrade)
 	if err != nil {
-			fmt.Printf("Unable to upgrade service %s\n", vargs.Service)
-			os.Exit(1)
+		fmt.Printf("Unable to upgrade service %s\n", vargs.Service)
+		os.Exit(1)
 	}
 
 	fmt.Printf("Upgraded %s to %s\n", vargs.Service, vargs.Image)
