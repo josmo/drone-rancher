@@ -1,0 +1,29 @@
+build:
+  image: golang:1.5
+  environment:
+    - GO15VENDOREXPERIMENT=0
+    - GOOS=linux
+    - GOARCH=amd64
+    - CGO_ENABLED=0
+  commands:
+    - go get
+    - go build
+    - go test
+
+publish:
+  docker:
+    username: drone
+    password: $$DOCKER_PASS
+    email: $$DOCKER_EMAIL
+    repo: plugins/drone-rancher
+    when:
+      branch: master
+
+plugin:
+  name: Rancher
+  desc: Trigger a Rancher deployment.
+  type: deploy
+  image: plugins/drone-rancher
+  labels:
+    - rancher
+    - docker
