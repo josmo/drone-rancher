@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -117,23 +116,23 @@ func main() {
 	fmt.Printf("Upgraded %s to %s\n", vargs.Service, vargs.Image)
 
 	if vargs.Confirm {
-		err = retryFunc(30*time.Second, func() error {
+		srv, err := retry(func() (interface{}, error) {
 			s, e := rancher.Service.ById(service.Id)
 			if e != nil {
-				return e
+				return nil, e
 			}
 			if s.State != "upgraded" {
-				return fmt.Errorf("Service not upgraded: %s", s.State)
+				return nil, fmt.Errorf("Service not upgraded: %s", s.State)
 			}
-			return nil
-		})
+			return s, nil
+		}, 30*time.Second, 3*time.Second)
+
 		if err != nil {
 			fmt.Printf("Error waiting for service upgrade to complete: %s", err)
 			os.Exit(1)
 		}
 
-		s, err := rancher.Service.ById(service.Id)
-		_, err = rancher.Service.ActionFinishupgrade(s)
+		_, err = rancher.Service.ActionFinishupgrade(srv.(*client.Service))
 		if err != nil {
 			fmt.Printf("Unable to finish upgrade %s: %s\n", vargs.Service, err)
 			os.Exit(1)
@@ -142,19 +141,19 @@ func main() {
 	}
 }
 
-func retryFunc(timeout time.Duration, f func() error) error {
+type retryFunc func() (interface{}, error)
+
+func retry(f retryFunc, timeout time.Duration, interval time.Duration) (interface{}, error) {
 	finish := time.After(timeout)
 	for {
-		err := f()
+		result, err := f()
 		if err == nil {
-			return nil
+			return result, nil
 		}
-		log.Printf("Retryable error: %v", err)
-
 		select {
 		case <-finish:
-			return err
-		case <-time.After(3 * time.Second):
+			return nil, err
+		case <-time.After(interval):
 		}
 	}
 }
