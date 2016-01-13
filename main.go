@@ -16,6 +16,7 @@ type Rancher struct {
 	Service    string `json:"service"`
 	Image      string `json:"docker_image"`
 	StartFirst bool   `json:"start_first"`
+	Confirm    bool   `json:"confirm"`
 }
 
 func main() {
@@ -112,4 +113,13 @@ func main() {
 	}
 
 	fmt.Printf("Upgraded %s to %s\n", vargs.Service, vargs.Image)
+
+	if vargs.Confirm {
+		_, err = rancher.Service.ActionFinishupgrade(&service)
+		if err != nil {
+			fmt.Printf("Unable to finish upgrade %s\n", vargs.Service)
+			os.Exit(1)
+		}
+		fmt.Printf("Finished upgrade %s\n", vargs.Service)
+	}
 }
