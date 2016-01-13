@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/drone/drone-go/plugin"
 	"github.com/rancher/go-rancher/client"
@@ -115,11 +117,44 @@ func main() {
 	fmt.Printf("Upgraded %s to %s\n", vargs.Service, vargs.Image)
 
 	if vargs.Confirm {
-		_, err = rancher.Service.ActionFinishupgrade(&service)
+		err = retryFunc(30*time.Second, func() error {
+			s, e := rancher.Service.ById(service.Id)
+			if e != nil {
+				return e
+			}
+			if s.State != "upgraded" {
+				return fmt.Errorf("Service not upgraded: %s", s.State)
+			}
+			return nil
+		})
 		if err != nil {
-			fmt.Printf("Unable to finish upgrade %s\n", vargs.Service)
+			fmt.Printf("Error waiting for service upgrade to complete: %s", err)
+			os.Exit(1)
+		}
+
+		s, err := rancher.Service.ById(service.Id)
+		_, err = rancher.Service.ActionFinishupgrade(s)
+		if err != nil {
+			fmt.Printf("Unable to finish upgrade %s: %s\n", vargs.Service, err)
 			os.Exit(1)
 		}
 		fmt.Printf("Finished upgrade %s\n", vargs.Service)
+	}
+}
+
+func retryFunc(timeout time.Duration, f func() error) error {
+	finish := time.After(timeout)
+	for {
+		err := f()
+		if err == nil {
+			return nil
+		}
+		log.Printf("Retryable error: %v", err)
+
+		select {
+		case <-finish:
+			return err
+		case <-time.After(3 * time.Second):
+		}
 	}
 }
