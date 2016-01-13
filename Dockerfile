@@ -3,7 +3,7 @@
 #     CGO_ENABLED=0 go build -a -tags netgo
 #     docker build --rm=true -t plugins/drone-rancher .
 
-FROM gliderlabs/alpine:3.1
+FROM gliderlabs/alpine:3.2
 RUN apk add --update \
   ca-certificates
 ADD drone-rancher /bin/
