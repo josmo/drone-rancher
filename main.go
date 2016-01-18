@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/drone/drone-go/plugin"
 	"github.com/rancher/go-rancher/client"
@@ -115,11 +116,44 @@ func main() {
 	fmt.Printf("Upgraded %s to %s\n", vargs.Service, vargs.Image)
 
 	if vargs.Confirm {
-		_, err = rancher.Service.ActionFinishupgrade(&service)
+		srv, err := retry(func() (interface{}, error) {
+			s, e := rancher.Service.ById(service.Id)
+			if e != nil {
+				return nil, e
+			}
+			if s.State != "upgraded" {
+				return nil, fmt.Errorf("Service not upgraded: %s", s.State)
+			}
+			return s, nil
+		}, 30*time.Second, 3*time.Second)
+
 		if err != nil {
-			fmt.Printf("Unable to finish upgrade %s\n", vargs.Service)
+			fmt.Printf("Error waiting for service upgrade to complete: %s", err)
+			os.Exit(1)
+		}
+
+		_, err = rancher.Service.ActionFinishupgrade(srv.(*client.Service))
+		if err != nil {
+			fmt.Printf("Unable to finish upgrade %s: %s\n", vargs.Service, err)
 			os.Exit(1)
 		}
 		fmt.Printf("Finished upgrade %s\n", vargs.Service)
+	}
+}
+
+type retryFunc func() (interface{}, error)
+
+func retry(f retryFunc, timeout time.Duration, interval time.Duration) (interface{}, error) {
+	finish := time.After(timeout)
+	for {
+		result, err := f()
+		if err == nil {
+			return result, nil
+		}
+		select {
+		case <-finish:
+			return nil, err
+		case <-time.After(interval):
+		}
 	}
 }
