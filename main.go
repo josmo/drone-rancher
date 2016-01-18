@@ -21,7 +21,13 @@ type Rancher struct {
 	Timeout    int    `json:"timeout"`
 }
 
+var (
+	buildDate string
+)
+
 func main() {
+	fmt.Printf("Drone Rancher Plugin built at %s\n", buildDate)
+
 	vargs := Rancher{
 		StartFirst: true,
 		Timeout:    30,
