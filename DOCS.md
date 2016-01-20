@@ -9,6 +9,7 @@ The following parameters are used to configure this plugin:
 - `docker_image` - new image to assign to service, including tag (`drone/drone:latest`)
 - `start_first` - start the new container before stopping the old one, defaults to `true`
 - `confirm` - auto confirm the service upgrade if successful, defaults to `false`
+- `timeout` - the maximum wait time in seconds for the service to upgrade, default to `30`
 
 The following is a sample Rancher configuration in your `.drone.yml` file:
 
