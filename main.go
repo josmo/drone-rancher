@@ -18,10 +18,14 @@ type Rancher struct {
 	Image      string `json:"docker_image"`
 	StartFirst bool   `json:"start_first"`
 	Confirm    bool   `json:"confirm"`
+	Timeout    int    `json:"timeout"`
 }
 
 func main() {
-	vargs := Rancher{StartFirst: true}
+	vargs := Rancher{
+		StartFirst: true,
+		Timeout:    30,
+	}
 
 	plugin.Param("vargs", &vargs)
 	err := plugin.Parse()
@@ -125,7 +129,7 @@ func main() {
 				return nil, fmt.Errorf("Service not upgraded: %s", s.State)
 			}
 			return s, nil
-		}, 30*time.Second, 3*time.Second)
+		}, time.Duration(vargs.Timeout)*time.Second, 3*time.Second)
 
 		if err != nil {
 			fmt.Printf("Error waiting for service upgrade to complete: %s", err)
