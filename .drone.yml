@@ -1,27 +1,37 @@
 build:
   image: golang:1.5
   environment:
-    - GO15VENDOREXPERIMENT=0
-    - GOOS=linux
-    - GOARCH=amd64
     - CGO_ENABLED=0
   commands:
-    - go get
-    - go build
-    - go test
+    - make deps
+    - make vet
+    - make build
+    - make test
 
 publish:
+  coverage:
+    when:
+      branch: master
   docker:
-    username: drone
+    username: $$DOCKER_USER
     password: $$DOCKER_PASS
     email: $$DOCKER_EMAIL
     repo: plugins/drone-rancher
+    tag: latest
     when:
       branch: master
+  docker:
+    username: $$DOCKER_USER
+    password: $$DOCKER_PASS
+    email: $$DOCKER_EMAIL
+    repo: plugins/drone-rancher
+    tag: develop
+    when:
+      branch: develop
 
 plugin:
   name: Rancher
-  desc: Trigger a Rancher deployment.
+  desc: Deploy or update a project on Rancher
   type: deploy
   image: plugins/drone-rancher
   labels:
