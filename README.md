@@ -4,7 +4,7 @@
 [![Coverage Status](https://aircover.co/badges/drone-plugins/drone-rancher/coverage.svg)](https://aircover.co/drone-plugins/drone-rancher)
 [![](https://badge.imagelayers.io/plugins/drone-rancher:latest.svg)](https://imagelayers.io/?images=plugins/drone-rancher:latest 'Get your own badge on imagelayers.io')
 
-Drone plugin to deploy or update a project on Rancher
+Drone plugin to deploy or update a project on Rancher. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 
 ## Binary
 
