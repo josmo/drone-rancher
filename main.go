@@ -22,11 +22,11 @@ type Rancher struct {
 }
 
 var (
-	buildDate string
+	buildCommit string
 )
 
 func main() {
-	fmt.Printf("Drone Rancher Plugin built at %s\n", buildDate)
+	fmt.Printf("Drone Rancher Plugin built from %s\n", buildCommit)
 
 	vargs := Rancher{
 		StartFirst: true,
