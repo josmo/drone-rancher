@@ -119,7 +119,7 @@ func main() {
 
 	_, err = rancher.Service.ActionUpgrade(&service, upgrade)
 	if err != nil {
-		fmt.Printf("Unable to upgrade service %s\n", vargs.Service)
+		fmt.Printf("Unable to upgrade service %s: %s\n", vargs.Service, err)
 		os.Exit(1)
 	}
 
