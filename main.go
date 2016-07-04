@@ -11,14 +11,16 @@ import (
 )
 
 type Rancher struct {
-	Url        string `json:"url"`
-	AccessKey  string `json:"access_key"`
-	SecretKey  string `json:"secret_key"`
-	Service    string `json:"service"`
-	Image      string `json:"docker_image"`
-	StartFirst bool   `json:"start_first"`
-	Confirm    bool   `json:"confirm"`
-	Timeout    int    `json:"timeout"`
+	Url            string `json:"url"`
+	AccessKey      string `json:"access_key"`
+	SecretKey      string `json:"secret_key"`
+	Service        string `json:"service"`
+	Image          string `json:"docker_image"`
+	StartFirst     bool   `json:"start_first"`
+	Confirm        bool   `json:"confirm"`
+	Timeout        int    `json:"timeout"`
+	IntervalMillis int64  `json:"interval_millis"`
+	BatchSize      int64  `json:"batch_size"`
 }
 
 var (
@@ -29,8 +31,10 @@ func main() {
 	fmt.Printf("Drone Rancher Plugin built from %s\n", buildCommit)
 
 	vargs := Rancher{
-		StartFirst: true,
-		Timeout:    30,
+		StartFirst:     true,
+		Timeout:        30,
+		IntervalMillis: 1000,
+		BatchSize:      2
 	}
 
 	plugin.Param("vargs", &vargs)
@@ -114,6 +118,8 @@ func main() {
 		LaunchConfig:           service.LaunchConfig,
 		SecondaryLaunchConfigs: service.SecondaryLaunchConfigs,
 		StartFirst:             vargs.StartFirst,
+		IntervalMillis:         vargs.IntervalMillis,
+		BatchSize:              vargs.BatchSize
 	}
 	upgrade.ToServiceStrategy = &client.ToServiceUpgradeStrategy{}
 
