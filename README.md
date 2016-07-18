@@ -14,47 +14,6 @@ Build the binary using `make`:
 make deps build
 ```
 
-### Example
-
-```sh
-./drone-rancher <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "url": "https://example.rancher.com",
-        "access_key": "1234567abcdefg",
-        "secret_key": "abcdefg1234567",
-        "service": "drone/drone",
-        "docker_image": "drone/drone:latest"
-    }
-}
-EOF
-```
 
 ## Docker
 
@@ -66,42 +25,18 @@ make deps docker
 
 ### Example
 
-```sh
-docker run -i plugins/drone-rancher <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "url": "https://example.rancher.com",
-        "access_key": "1234567abcdefg",
-        "secret_key": "abcdefg1234567",
-        "service": "drone/drone",
-        "docker_image": "drone/drone:latest"
-    }
-}
-EOF
+## Usage
+
+Build and deploy from your current working directory:
+
+```
+docker run --rm                          \
+  -e PLUGIN_URL=<source>                 \
+  -e PLUGIN_ACCESS_KEY=<key>     \
+  -e PLUGIN_SECRET_KEY=<secret>  \
+  -e PLUGIN_SERVICE=<service>            \  
+  -e PLUGIN_DOCKER_IMAGE=<image>         \
+  -v $(pwd):$(pwd)                       \
+  -w $(pwd)                              \
+  plugins/rancher 
 ```
