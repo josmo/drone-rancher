@@ -14,94 +14,30 @@ Build the binary using `make`:
 make deps build
 ```
 
-### Example
+## Image
 
-```sh
-./drone-rancher <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "url": "https://example.rancher.com",
-        "access_key": "1234567abcdefg",
-        "secret_key": "abcdefg1234567",
-        "service": "drone/drone",
-        "docker_image": "drone/drone:latest"
-    }
-}
-EOF
-```
-
-## Docker
-
-Build the container using `make`:
+Build the docker images using `make`:
 
 ```
-make deps docker
+make docker
 ```
 
-### Example
+## Usage:
 
-```sh
-docker run -i plugins/drone-rancher <<EOF
-{
-    "repo": {
-        "clone_url": "git://github.com/drone/drone",
-        "owner": "drone",
-        "name": "drone",
-        "full_name": "drone/drone"
-    },
-    "system": {
-        "link_url": "https://beta.drone.io"
-    },
-    "build": {
-        "number": 22,
-        "status": "success",
-        "started_at": 1421029603,
-        "finished_at": 1421029813,
-        "message": "Update the Readme",
-        "author": "johnsmith",
-        "author_email": "john.smith@gmail.com"
-        "event": "push",
-        "branch": "master",
-        "commit": "436b7a6e2abaddfd35740527353e78a227ddcb2c",
-        "ref": "refs/heads/master"
-    },
-    "workspace": {
-        "root": "/drone/src",
-        "path": "/drone/src/github.com/drone/drone"
-    },
-    "vargs": {
-        "url": "https://example.rancher.com",
-        "access_key": "1234567abcdefg",
-        "secret_key": "abcdefg1234567",
-        "service": "drone/drone",
-        "docker_image": "drone/drone:latest"
-    }
-}
-EOF
+Build and publish from your current working directory:
+
+```
+docker run --rm \
+  -e PLUGIN_URL=rancher.youdomain.com \
+  -e PLUGIN_ACCESS_KEY=4ccesskey \
+  -e PLUGIN_SECRET_KEY=secretkey \
+  -e PLUGIN_SERVICE=stack/service \
+  -e PLUGIN_IMAGE=yourregistry.com/image:tag \
+  -e PLUGIN_START_FIRST=true \
+  -e PLUGIN_CONFIRM=true \
+  -e PLUGIN_TIMEOUT=20 \
+  -v $(pwd):$(pwd) \
+  -w $(pwd) \
+  --privileged \
+  plugins/drone-rancher
 ```
