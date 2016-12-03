@@ -15,7 +15,7 @@ pipeline:
   publish:
     image: plugins/docker
     username: josmo
-    repo: peloton/rancher
+    repo: peloton/drone-rancher
     tag:
       - ${DRONE_BUILD_NUMBER}
       - latest
