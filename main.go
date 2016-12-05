@@ -88,7 +88,7 @@ func run(c *cli.Context) error {
 		Service:       c.String("service"),
 		DockerImage:    c.String("docker-image"),
 		StartFirst:     c.BoolT("start-first"),
-		Confirm:        c.Bool("start-first"),
+		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),
 		YamlVerified: c.BoolT("yaml-verified"),
 	}
