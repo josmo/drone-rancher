@@ -70,13 +70,13 @@ func main() {
 			Value:  30,
 			EnvVar: "PLUGIN_TIMEOUT",
 		},
-		cli.IntFlag{
+		cli.Int64Flag{
 			Name:   "interval-millis",
 			Usage:  "The interval for batch size upgrade",
 			Value:  1000,
 			EnvVar: "PLUGIN_INTERVAL_MILLIS",
 		},
-		cli.IntFlag{
+		cli.Int64Flag{
 			Name:   "batch-size",
 			Usage:  "The upgrade batch size",
 			Value:  1,

@@ -18,8 +18,8 @@ type Plugin struct {
 	StartFirst     bool
 	Confirm        bool
 	Timeout        int
-	IntervalMillis int
-	BatchSize      int
+	IntervalMillis int64
+	BatchSize      int64
 	YamlVerified   bool
 }
 
