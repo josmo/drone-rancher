@@ -104,8 +104,8 @@ func run(c *cli.Context) error {
 		StartFirst:     c.BoolT("start-first"),
 		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),
-		IntervalMillis: c.Int("interval-millis"),
-		BatchSize:      c.Int("batch-size"),
+		IntervalMillis: c.Int64("interval-millis"),
+		BatchSize:      c.Int64("batch-size"),
 		YamlVerified:   c.BoolT("yaml-verified"),
 	}
 	return plugin.Exec()
