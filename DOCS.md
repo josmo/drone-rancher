@@ -10,6 +10,8 @@ The following parameters are used to configure this plugin:
 - `start_first` - start the new container before stopping the old one, defaults to `true`
 - `confirm` - auto confirm the service upgrade if successful, defaults to `false`
 - `timeout` - the maximum wait time in seconds for the service to upgrade, default to `30`
+- `interval_millis` - the upgrade interval in milli seconds, defaults to `1000`
+- `batch_size` - the upgrade batch size, defaults to `1`
 
 The following is a sample Rancher configuration in your `.drone.yml` file:
 
