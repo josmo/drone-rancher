@@ -1,20 +1,22 @@
 package main
 
 import (
-	"os"
 	"github.com/codegangsta/cli"
 	"log"
+	"os"
 )
 
 type Rancher struct {
-	Url        string `json:"url"`
-	AccessKey  string `json:"access_key"`
-	SecretKey  string `json:"secret_key"`
-	Service    string `json:"service"`
-	Image      string `json:"docker_image"`
-	StartFirst bool   `json:"start_first"`
-	Confirm    bool   `json:"confirm"`
-	Timeout    int    `json:"timeout"`
+	Url            string `json:"url"`
+	AccessKey      string `json:"access_key"`
+	SecretKey      string `json:"secret_key"`
+	Service        string `json:"service"`
+	Image          string `json:"docker_image"`
+	StartFirst     bool   `json:"start_first"`
+	Confirm        bool   `json:"confirm"`
+	Timeout        int    `json:"timeout"`
+	IntervalMillis int64  `json:"interval_millis"`
+	BatchSize      int64  `json:"batch_size"`
 }
 
 var version string // build number set at compile-time
@@ -68,6 +70,18 @@ func main() {
 			Value:  30,
 			EnvVar: "PLUGIN_TIMEOUT",
 		},
+		cli.Int64Flag{
+			Name:   "interval-millis",
+			Usage:  "The interval for batch size upgrade",
+			Value:  1000,
+			EnvVar: "PLUGIN_INTERVAL_MILLIS",
+		},
+		cli.Int64Flag{
+			Name:   "batch-size",
+			Usage:  "The upgrade batch size",
+			Value:  1,
+			EnvVar: "PLUGIN_BATCH_SIZE",
+		},
 		cli.BoolTFlag{
 			Name:   "yaml-verified",
 			Usage:  "Ensure the yaml was signed",
@@ -82,16 +96,17 @@ func main() {
 
 func run(c *cli.Context) error {
 	plugin := Plugin{
-		URL:     c.String("url"),
-		Key:          c.String("access-key"),
-		Secret:       c.String("secret-key"),
-		Service:       c.String("service"),
+		URL:            c.String("url"),
+		Key:            c.String("access-key"),
+		Secret:         c.String("secret-key"),
+		Service:        c.String("service"),
 		DockerImage:    c.String("docker-image"),
 		StartFirst:     c.BoolT("start-first"),
 		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),
-		YamlVerified: c.BoolT("yaml-verified"),
+		IntervalMillis: c.Int64("interval-millis"),
+		BatchSize:      c.Int64("batch-size"),
+		YamlVerified:   c.BoolT("yaml-verified"),
 	}
 	return plugin.Exec()
 }
-

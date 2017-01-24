@@ -1,30 +1,32 @@
 package main
 
 import (
-	"fmt"
 	"errors"
-	"strings"
-	"github.com/rancher/go-rancher/client"
+	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/rancher/go-rancher/client"
+	"strings"
 	"time"
 )
 
 type Plugin struct {
-	URL          string
-	Key          string
-	Secret       string
-	Service      string
-	DockerImage  string
-	StartFirst   bool
-	Confirm      bool
-	Timeout      int
-	YamlVerified bool
+	URL            string
+	Key            string
+	Secret         string
+	Service        string
+	DockerImage    string
+	StartFirst     bool
+	Confirm        bool
+	Timeout        int
+	IntervalMillis int64
+	BatchSize      int64
+	YamlVerified   bool
 }
 
 func (p *Plugin) Exec() error {
 	log.Info("Drone Rancher Plugin built")
 
-	if (p.URL == "" || p.Key == "" || p.Secret == "") {
+	if p.URL == "" || p.Key == "" || p.Secret == "" {
 		return errors.New("Eek: Must have url, key, secret, and service definied")
 	}
 
@@ -41,7 +43,7 @@ func (p *Plugin) Exec() error {
 	}
 
 	rancher, err := client.NewRancherClient(&client.ClientOpts{
-		Url: p.URL,
+		Url:       p.URL,
 		AccessKey: p.Key,
 		SecretKey: p.Secret,
 	})
@@ -83,9 +85,11 @@ func (p *Plugin) Exec() error {
 	service.LaunchConfig.ImageUuid = p.DockerImage
 	upgrade := &client.ServiceUpgrade{}
 	upgrade.InServiceStrategy = &client.InServiceUpgradeStrategy{
-		LaunchConfig: service.LaunchConfig,
+		LaunchConfig:           service.LaunchConfig,
 		SecondaryLaunchConfigs: service.SecondaryLaunchConfigs,
-		StartFirst: p.StartFirst,
+		StartFirst:             p.StartFirst,
+		IntervalMillis:         p.IntervalMillis,
+		BatchSize:              p.BatchSize,
 	}
 	upgrade.ToServiceStrategy = &client.ToServiceUpgradeStrategy{}
 	_, err = rancher.Service.ActionUpgrade(&service, upgrade)
@@ -94,31 +98,30 @@ func (p *Plugin) Exec() error {
 	}
 
 	log.Info(fmt.Sprintf("Upgraded %s to %s\n", p.Service, p.DockerImage))
-		if p.Confirm {
-			srv, err := retry(func() (interface{}, error) {
-				s, e := rancher.Service.ById(service.Id)
-				if e != nil {
-					return nil, e
-				}
-				if s.State != "upgraded" {
-					return nil, errors.New(fmt.Sprintf("Service not upgraded: %s", s.State))
-				}
-				return s, nil
-			}, time.Duration(p.Timeout)*time.Second, 3*time.Second)
-
-			if err != nil {
-				return errors.New(fmt.Sprintf("Error waiting for service upgrade to complete: %s", err))
+	if p.Confirm {
+		srv, err := retry(func() (interface{}, error) {
+			s, e := rancher.Service.ById(service.Id)
+			if e != nil {
+				return nil, e
 			}
-
-			_, err = rancher.Service.ActionFinishupgrade(srv.(*client.Service))
-			if err != nil {
-				return errors.New(fmt.Sprintf("Unable to finish upgrade %s: %s\n", p.Service, err))
+			if s.State != "upgraded" {
+				return nil, errors.New(fmt.Sprintf("Service not upgraded: %s", s.State))
 			}
-			log.Info(fmt.Printf("Finished upgrade %s\n", p.Service))
+			return s, nil
+		}, time.Duration(p.Timeout)*time.Second, 3*time.Second)
+
+		if err != nil {
+			return errors.New(fmt.Sprintf("Error waiting for service upgrade to complete: %s", err))
 		}
+
+		_, err = rancher.Service.ActionFinishupgrade(srv.(*client.Service))
+		if err != nil {
+			return errors.New(fmt.Sprintf("Unable to finish upgrade %s: %s\n", p.Service, err))
+		}
+		log.Info(fmt.Printf("Finished upgrade %s\n", p.Service))
+	}
 	return nil
 }
-
 
 type retryFunc func() (interface{}, error)
 
