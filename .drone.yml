@@ -20,8 +20,20 @@ pipeline:
       - ${DRONE_BUILD_NUMBER}
       - latest
     when:
+      branch: master
+      event: push
+
+  publish:
+    image: plugins/docker
+    username: josmo
+    repo: peloton/drone-rancher
+    tag:
+      - ${DRONE_BUILD_NUMBER}
+      - develop-latest
+    when:
       branch: develop
       event: push
+
 
 plugin:
   name: Rancher
