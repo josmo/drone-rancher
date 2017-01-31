@@ -15,6 +15,7 @@ pipeline:
   publish:
     image: plugins/docker
     username: josmo
+    password: ${DOCKER_PASSWORD}
     repo: peloton/drone-rancher
     tag:
       - ${DRONE_BUILD_NUMBER}
@@ -26,6 +27,7 @@ pipeline:
   publish:
     image: plugins/docker
     username: josmo
+    password: ${DOCKER_PASSWORD}
     repo: peloton/drone-rancher
     tag:
       - ${DRONE_BUILD_NUMBER}
