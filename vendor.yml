@@ -1,0 +1,19 @@
+vendors:
+- path: github.com/Sirupsen/logrus
+  rev: 3f603f494d61c73457fb234161d8982b9f0f0b71
+- path: github.com/codegangsta/cli
+  rev: 347a9884a87374d000eec7e6445a34487c1f4a2b
+- path: github.com/davecgh/go-spew
+  rev: 346938d642f2ec3594ed81d874461961cd0faa76
+- path: github.com/gorilla/websocket
+  rev: 804cb600d06b10672f2fbc0a336a7bee507a428e
+- path: github.com/pkg/errors
+  rev: 248dadf4e9068a0b3e79f02ed0a610d935de5302
+- path: github.com/pmezard/go-difflib
+  rev: 792786c7400a136282c1664665ae0a8db921c6c2
+- path: github.com/rancher/go-rancher
+  rev: 2c43ff300f3eafcbd7d0b89b10427fc630efdc1e
+- path: github.com/stretchr/testify
+  rev: 4d4bfba8f1d1027c4fdbe371823030df51419987
+- path: golang.org/x/sys
+  rev: e24f485414aeafb646f6fca458b0bf869c0880a1

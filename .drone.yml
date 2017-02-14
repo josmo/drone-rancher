@@ -3,14 +3,13 @@ workspace:
 
 pipeline:
   build:
-    image: golang:1.5
+    image: golang:1.6
     environment:
       - CGO_ENABLED=0
     commands:
-      - make deps
-      - make vet
-      - make build
-      - make test
+      - go vet
+      - go test -cover -coverprofile=coverage.out
+      - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
 
   publish:
     image: plugins/docker

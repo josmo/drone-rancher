@@ -2,12 +2,16 @@ package main
 
 import (
 	"flag"
-	log "github.com/Sirupsen/logrus"
 	"os"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 var (
-	command = flag.String("command", "", "generate-docs | generate-description")
+	command  = flag.String("command", "", "generate-docs | generate-description | generate-collection-description")
+	version  = flag.String("version", "v1.0", "docs version")
+	language = flag.String("lang", "en", "docs language")
+	layout   = flag.String("layout", "rancher-default", "docs layout")
 )
 
 func main() {
@@ -17,9 +21,17 @@ func main() {
 	if *command != "" {
 
 		switch *command {
+		case "generate-collection-description":
+			log.Info("Generating the api collections descriptions file...")
+			err := generateDescriptionFile(false, true, true, false, false)
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+			log.Info("Done...")
 		case "generate-description":
 			log.Info("Generating the api descriptions file...")
-			err := generateDescriptionFile()
+			err := generateDescriptionFile(false, false, true, true, true)
 			if err != nil {
 				log.Fatal(err)
 				os.Exit(1)
@@ -28,6 +40,22 @@ func main() {
 		case "generate-docs":
 			log.Info("Generating the api docs...")
 			err := generateFiles()
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+			log.Info("Done...")
+		case "generate-empty-description":
+			log.Info("Generating the api descriptions file with empty descriptions...")
+			err := generateDescriptionFile(true, false, true, true, true)
+			if err != nil {
+				log.Fatal(err)
+				os.Exit(1)
+			}
+			log.Info("Done...")
+		case "generate-only-resource-fields":
+			log.Info("Generating only the resource fields for json input...")
+			err := generateDescriptionFile(true, false, false, false, true)
 			if err != nil {
 				log.Fatal(err)
 				os.Exit(1)

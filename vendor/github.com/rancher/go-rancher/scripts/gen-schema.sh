@@ -1,29 +1,12 @@
 #!/bin/bash
-set -e
-
-CATTLE_VERSION=v0.161.3
-
-cleanup()
-{
-    e=$?
-    if [ -n "$PID" ]; then
-        kill $PID
-    fi
-    exit $e
-}
-
-trap cleanup EXIT
+set -e -x
 
 cd $(dirname $0)/../generator
 
-CATTLE_JAR=https://github.com/rancher/cattle/releases/download/${CATTLE_VERSION}/cattle.jar
 URL_BASE='http://localhost:8080'
 
-if [ "$1" != "-l" ]; then
-    URL_BASE='http://localhost:18282'
-    docker run -p 18282:8080 --rm -e CATTLE_MACHINE_EXECUTE=false -e URL=$CATTLE_JAR rancher/server:v1.0.1-rc1 &
-    PID=$!
-    sleep 2
+if [ "$1" != "" ]; then
+    URL_BASE=$1
 fi
 
 echo -n Waiting for cattle ${URL_BASE}/ping
@@ -33,14 +16,32 @@ while ! curl -fs ${URL_BASE}/ping; do
 done
 echo
 
-curl -s "${URL_BASE}/v1/schemas?_role=service" | jq . > schemas.json
-echo Saved schemas.json
+gen() {
+    BASE=$1
 
-echo -n Generating go code...
-godep go run generator.go
-echo " Done"
+    curl -s "${URL_BASE}/$BASE/schemas?_role=service" | jq . > schemas.json
+    echo Saved schemas.json
 
-gofmt -w ../client/generated_*
-echo Formatted code
+    echo -n Generating go code...
+    rm -rf ../v2/generated_* || true
+    go run generator.go
+    echo " Done"
+
+    gofmt -w ../v2/generated_*
+    echo Formatted code
+
+    if [ -n "$2" ]; then
+        rm -rf ../$2
+        mv ../v2 ../$2
+        if [ -n "$3" ]; then
+            sed -i -e 's/package client/package '$2'/g' ../$2/*.go
+        fi
+        git checkout ../v2
+    fi
+    rm schemas.json
+}
+
+gen v1-catalog catalog rename
+gen v2-beta
 
 echo Success

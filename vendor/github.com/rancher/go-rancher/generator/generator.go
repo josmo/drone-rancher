@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	CLIENT_OUTPUT_DIR = "../client"
+	CLIENT_OUTPUT_DIR = "../v2"
 )
 
 var (
@@ -71,8 +71,12 @@ func getTypeMap(schema client.Schema) map[string]string {
 				result[fieldName] = "[]int64"
 			case "array[float64]":
 				result[fieldName] = "[]float64"
-			default:
+			case "array[json]":
 				result[fieldName] = "[]interface{}"
+			default:
+				s := strings.TrimLeft(field.Type, "array[")
+				s = strings.TrimRight(s, "]")
+				result[fieldName] = "[]" + capitalize(s)
 			}
 		} else if strings.HasPrefix(field.Type, "map") {
 			result[fieldName] = "map[string]interface{}"
@@ -88,6 +92,8 @@ func getTypeMap(schema client.Schema) map[string]string {
 			result[fieldName] = "int64"
 		} else if strings.HasPrefix(field.Type, "password") {
 			result[fieldName] = "string"
+		} else if strings.HasPrefix(field.Type, "bool") {
+			result[fieldName] = "bool"
 		} else if _, noConvert := noConversionTypes[field.Type]; noConvert {
 			result[fieldName] = field.Type
 		} else if field.Nullable {
