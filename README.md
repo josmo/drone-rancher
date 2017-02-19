@@ -36,5 +36,5 @@ docker run --rm                          \
   -e PLUGIN_DOCKER_IMAGE=<image>         \
   -v $(pwd):$(pwd)                       \
   -w $(pwd)                              \
-  plugins/rancher 
+  peloton/drone-rancher 
 ```
