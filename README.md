@@ -1,6 +1,6 @@
 # drone-rancher
 
-[![Build Status](http://drone.ci.prod.seattleslow.com/api/badges/josmo/drone-rancher/status.svg)](http://drone.ci.prod.seattleslow.com/josmo/drone-rancher)
+[![Build Status](https://drone.seattleslow.com/api/badges/josmo/drone-rancher/status.svg)](https://drone.seattleslow.com/josmo/drone-rancher)
 
 Drone plugin to deploy or update a project on Rancher. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 

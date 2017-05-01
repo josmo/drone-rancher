@@ -1,6 +1,6 @@
 workspace:
   base: /go
-
+  path: src/github.com/josmo/drone-rancher
 pipeline:
   build:
     image: golang:1.6
@@ -14,7 +14,7 @@ pipeline:
   publish:
     image: plugins/docker
     username: josmo
-    password: ${DOCKER_PASSWORD}
+    secrets: [ docker_password ]
     repo: peloton/drone-rancher
     tag:
       - ${DRONE_BUILD_NUMBER}
@@ -22,19 +22,6 @@ pipeline:
     when:
       branch: master
       event: push
-
-  publish:
-    image: plugins/docker
-    username: josmo
-    password: ${DOCKER_PASSWORD}
-    repo: peloton/drone-rancher
-    tag:
-      - ${DRONE_BUILD_NUMBER}
-      - develop-latest
-    when:
-      branch: develop
-      event: push
-
 
 plugin:
   name: Rancher
