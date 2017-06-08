@@ -66,18 +66,39 @@ func (p *Plugin) Exec() error {
 			return errors.New(fmt.Sprintf("Unable to find stack %s\n", wantedStack))
 		}
 	}
+
+	// Get the initial set of services
 	services, err := rancher.Service.List(&client.ListOpts{})
+	// Check for an error
 	if err != nil {
 		return errors.New(fmt.Sprintf("Failed to list rancher services: %s\n", err))
 	}
-	found := false
+
 	var service client.Service
-	for _, svc := range services.Data {
-		if svc.Name == wantedService && ((wantedStack != "" && svc.EnvironmentId == stackId) || wantedStack == "") {
-			service = svc
-			found = true
+	found := false
+	for {
+
+		// Iterate the current services
+		for _, svc := range services.Data {
+			if svc.Name == wantedService && ((wantedStack != "" && svc.EnvironmentId == stackId) || wantedStack == "") {
+				service = svc
+				found = true
+				break
+			}
+		}
+
+		// Get the next set of services (paginate)
+		if !found {
+			services, err = services.Next()
+			if err != nil {
+				return errors.New(fmt.Sprintf("Failed to list rancher services: %s\n", err))
+			}
+			if services == nil {
+				break
+			}
 		}
 	}
+
 	if !found {
 		return errors.New(fmt.Sprintf("Unable to find service %s\n", p.Service))
 	}
