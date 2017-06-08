@@ -76,6 +76,7 @@ func (p *Plugin) Exec() error {
 
 	var service client.Service
 	found := false
+	//TODO: find a more elegant and clear way to iterate through the service paging
 	for {
 
 		// Iterate the current services
@@ -85,6 +86,9 @@ func (p *Plugin) Exec() error {
 				found = true
 				break
 			}
+		}
+		if found {
+			break
 		}
 
 		// Get the next set of services (paginate)
