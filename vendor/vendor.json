@@ -1,0 +1,43 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "DWPL08pD/SQ2GzLfoR7ZXnjj7Sw=",
+			"path": "github.com/Sirupsen/logrus",
+			"revision": "4b6ea7319e214d98c938f12692336f7ca9348d6b",
+			"revisionTime": "2016-03-17T14:11:10Z"
+		},
+		{
+			"checksumSHA1": "8KawKW6FJguwWz5cPvMg/ChmepE=",
+			"path": "github.com/gorilla/websocket",
+			"revision": "a69d9f6de432e2c6b296a947d8a5ee88f68522cf",
+			"revisionTime": "2017-07-18T20:23:41Z"
+		},
+		{
+			"checksumSHA1": "rJab1YdNhQooDiBWNnt7TLWPyBU=",
+			"path": "github.com/pkg/errors",
+			"revision": "c605e284fe17294bda444b34710735b29d1a9d90",
+			"revisionTime": "2017-05-05T04:36:39Z"
+		},
+		{
+			"checksumSHA1": "u5s2PZ7fzCOqQX7bVPf9IJ+qNLQ=",
+			"path": "github.com/rancher/go-rancher",
+			"revision": "2c43ff300f3eafcbd7d0b89b10427fc630efdc1e",
+			"revisionTime": "2016-12-20T06:33:30Z"
+		},
+		{
+			"checksumSHA1": "1fR2Rjb3WgPYi9GOB3HrMAFtCPs=",
+			"path": "github.com/rancher/go-rancher/client",
+			"revision": "2c43ff300f3eafcbd7d0b89b10427fc630efdc1e",
+			"revisionTime": "2016-12-20T06:33:30Z"
+		},
+		{
+			"checksumSHA1": "9LeR7BH4PSu8LRDZ8bY7QY1HXJE=",
+			"path": "github.com/urfave/cli",
+			"revision": "4b90d79a682b4bf685762c7452db20f2a676ecb2",
+			"revisionTime": "2017-07-06T19:46:25Z"
+		}
+	],
+	"rootPath": "github.com/josmo/drone-rancher"
+}
