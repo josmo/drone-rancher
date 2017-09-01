@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/cli"
+	"fmt"
 	"log"
 	"os"
 )
@@ -19,14 +20,15 @@ type Rancher struct {
 	BatchSize      int64  `json:"batch_size"`
 }
 
-var version string // build number set at compile-time
+var build string // build number set at compile-time
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "rancher publish"
 	app.Usage = "rancher publish"
 	app.Action = run
-	app.Version = version
+	app.Version = fmt.Sprintf("1.0.0+%s", build)
+
 	app.Flags = []cli.Flag{
 
 		cli.StringFlag{

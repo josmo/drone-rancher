@@ -2,32 +2,93 @@ workspace:
   base: /go
   path: src/github.com/josmo/drone-rancher
 pipeline:
-  build:
-    image: golang:1.6
-    environment:
-      - CGO_ENABLED=0
+  test:
+    image: golang:1.9
     commands:
       - go vet
       - go test -cover -coverprofile=coverage.out
-      - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
 
-  publish:
+  build_linux_amd64:
+    image: golang:1.9
+    group: build
+    environment:
+      - GOOS=linux
+      - GOARCH=amd64
+      - CGO_ENABLED=0
+    commands:
+      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/drone-rancher
+
+  build_linux_arm64:
+    image: golang:1.9
+    group: build
+    environment:
+      - GOOS=linux
+      - GOARCH=arm64
+      - CGO_ENABLED=0
+    commands:
+      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/drone-rancher
+
+  build_linux_arm:
+    image: golang:1.9
+    group: build
+    environment:
+      - GOOS=linux
+      - GOARCH=arm
+      - CGO_ENABLED=0
+      - GOARM=7
+    commands:
+      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/drone-rancher
+
+  # build_windows_amd64:
+  #   image: golang:1.9-nanoserver
+  #   group: build
+  #   environment:
+  #     - GOOS=windows
+  #     - GOARCH=amd64
+  #     - CGO_ENABLED=0
+  #   commands:
+  #     - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/windows/amd64/drone-webhook
+
+  publish_linux_amd64:
     image: plugins/docker
     username: josmo
-    secrets: [ docker_password ]
     repo: peloton/drone-rancher
-    tag:
-      - ${DRONE_BUILD_NUMBER}
-      - latest
+    tags: [ latest, 1.0.0, 1.0, 1 ]
+    secrets: [ docker_password ]
+    dockerfile: Dockerfile
     when:
       branch: master
       event: push
 
-plugin:
-  name: Rancher
-  desc: Deploy or update a project on Rancher
-  type: deploy
-  image: peloton/rancher
-  labels:
-    - rancher
-    - docker
+  publish_linux_arm64:
+    image: plugins/docker
+    username: josmo
+    repo: peloton/drone-rancher
+    tags: [ linux-arm64 ]
+    secrets: [ docker_password ]
+    dockerfile: Dockerfile.arm64
+    when:
+      branch: master
+      event: push
+
+  publish_linux_arm:
+    image: plugins/docker
+    username: josmo
+    repo: peloton/drone-rancher
+    tags: [ linux-arm ]
+    secrets: [ docker_password ]
+    dockerfile: Dockerfile.arm
+    when:
+      branch: master
+      event: push
+
+  # publish_windows_amd64:
+  #   image: plugins/docker
+  #   username: josmo
+  #   repo: peloton/drone-rancher
+  #   tags: [ windows-amd64 ]
+  #   secrets: [ docker_password ]
+  #   dockerfile: Dockerfile.windows
+  #   when:
+  #     branch: master
+  #     event: push
