@@ -32,6 +32,10 @@ func (p *Plugin) Exec() error {
 
 	if !strings.HasPrefix(p.DockerImage, "docker:") {
 		p.DockerImage = fmt.Sprintf("docker:%s", p.DockerImage)
+		//need to check for other tags
+		//if !strings.HasSuffix(p.DockerImage, "docker:") {
+			p.DockerImage = fmt.Sprintf("%s:%s", p.DockerImage, p.Tags)
+		//}
 	}
 	var wantedService, wantedStack string
 	if strings.Contains(p.Service, "/") {
