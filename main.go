@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/urfave/cli"
+	 "github.com/bradrydzewski/cli"
 	"log"
 	"os"
 )
@@ -28,6 +28,8 @@ func main() {
 	app.Usage = "rancher publish"
 	app.Action = run
 	app.Version = fmt.Sprintf("1.0.0+%s", build)
+
+	fmt.Println("hello world")
 
 	app.Flags = []cli.Flag{
 
@@ -56,12 +58,11 @@ func main() {
 			Usage:  "image to use",
 			EnvVar: "PLUGIN_DOCKER_IMAGE",
 		},
-		cli.StringFlag{
+		cli.StringSliceFlag{
 			Name:   "docker-image-tags",
 			Usage:  "tag of docker image to use",
 			Value:    &cli.StringSlice{"latest"},
-			EnvVar: "PLUGIN_TAG,PLUGIN_TAGS",
-			FilePath: ".tags"
+			FilePath: ".tags",
 		},
 		cli.BoolTFlag{
 			Name:   "start-first",
@@ -110,7 +111,7 @@ func run(c *cli.Context) error {
 		Secret:         c.String("secret-key"),
 		Service:        c.String("service"),
 		DockerImage:    c.String("docker-image"),
-		Tags:    c.String("docker-image-tags"),
+		Tags:    		c.StringSlice("docker-image-tags"),
 		StartFirst:     c.BoolT("start-first"),
 		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),

@@ -7,6 +7,7 @@ import (
 	"github.com/rancher/go-rancher/client"
 	"strings"
 	"time"
+    "regexp"
 )
 
 type Plugin struct {
@@ -15,7 +16,7 @@ type Plugin struct {
 	Secret         string
 	Service        string
 	DockerImage    string
-	Tags    string
+	Tags    		[]string
 	StartFirst     bool
 	Confirm        bool
 	Timeout        int
@@ -33,10 +34,17 @@ func (p *Plugin) Exec() error {
 
 	if !strings.HasPrefix(p.DockerImage, "docker:") {
 		p.DockerImage = fmt.Sprintf("docker:%s", p.DockerImage)
-		//need to check for other tags
-		//if !strings.HasSuffix(p.DockerImage, "docker:") {
-			p.DockerImage = fmt.Sprintf("%s:%s", p.DockerImage, p.Tags)
-		//}
+		//if tags are supplied then pull the tag with the first one
+		if len(p.Tags) > 0 {
+			reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+			if err != nil {
+				log.Fatal(err)
+			}
+			tag := reg.ReplaceAllString(p.Tags[0], "")
+
+			log.Info(fmt.Sprintf("pulling tag :%s", tag))
+			p.DockerImage = fmt.Sprintf("%s:%s", p.DockerImage, tag)
+		}
 	}
 	var wantedService, wantedStack string
 	if strings.Contains(p.Service, "/") {
