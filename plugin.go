@@ -15,6 +15,7 @@ type Plugin struct {
 	Secret         string
 	Service        string
 	DockerImage    string
+	Tags    string
 	StartFirst     bool
 	Confirm        bool
 	Timeout        int
