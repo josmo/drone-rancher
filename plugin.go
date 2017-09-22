@@ -36,7 +36,7 @@ func (p *Plugin) Exec() error {
 		p.DockerImage = fmt.Sprintf("docker:%s", p.DockerImage)
 		//if tags are supplied then pull the tag with the first one
 		if len(p.Tags) > 0 {
-			reg, err := regexp.Compile("[^a-zA-Z0-9]+")
+			reg, err := regexp.Compile("[^a-zA-Z0-9-_]+")
 			if err != nil {
 				log.Fatal(err)
 			}
