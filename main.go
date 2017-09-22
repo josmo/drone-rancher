@@ -64,6 +64,11 @@ func main() {
 			Value:    &cli.StringSlice{"latest"},
 			FilePath: ".tags",
 		},
+		cli.StringFlag{
+			Name:   "tag-filter",
+			Usage:  "only tags matching this value get deployed",
+			EnvVar: "PLUGIN_TAG_FILTER",
+		},
 		cli.BoolTFlag{
 			Name:   "start-first",
 			Usage:  "Start new container before stoping old",
@@ -112,6 +117,7 @@ func run(c *cli.Context) error {
 		Service:        c.String("service"),
 		DockerImage:    c.String("docker-image"),
 		Tags:    		c.StringSlice("docker-image-tags"),
+		TagFilter:    	c.String("tag-filter"),
 		StartFirst:     c.BoolT("start-first"),
 		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),

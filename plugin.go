@@ -16,7 +16,8 @@ type Plugin struct {
 	Secret         string
 	Service        string
 	DockerImage    string
-	Tags    		[]string
+	Tags    	   []string
+	TagFilter	   string
 	StartFirst     bool
 	Confirm        bool
 	Timeout        int
@@ -41,9 +42,14 @@ func (p *Plugin) Exec() error {
 				log.Fatal(err)
 			}
 			tag := reg.ReplaceAllString(p.Tags[0], "")
-
-			log.Info(fmt.Sprintf("pulling tag :%s", tag))
-			p.DockerImage = fmt.Sprintf("%s:%s", p.DockerImage, tag)
+			//if there is a tag filter then only allow matches - could be more sophisticated
+			if strings.EqualFold(p.TagFilter, tag) {
+				log.Info(fmt.Sprintf("pulling tag :%s", tag))
+				p.DockerImage = fmt.Sprintf("%s:%s", p.DockerImage, tag)
+			} else {
+				log.Info(fmt.Sprintf("Tag :%s does not match %s, skipping Rancher deploy", tag, p.TagFilter))
+				return nil
+			}
 		}
 	}
 	var wantedService, wantedStack string
