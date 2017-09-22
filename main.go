@@ -110,6 +110,7 @@ func run(c *cli.Context) error {
 		Secret:         c.String("secret-key"),
 		Service:        c.String("service"),
 		DockerImage:    c.String("docker-image"),
+		Tags:    c.String("docker-image-tags"),
 		StartFirst:     c.BoolT("start-first"),
 		Confirm:        c.Bool("confirm"),
 		Timeout:        c.Int("timeout"),
