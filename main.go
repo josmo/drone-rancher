@@ -56,6 +56,13 @@ func main() {
 			Usage:  "image to use",
 			EnvVar: "PLUGIN_DOCKER_IMAGE",
 		},
+		cli.StringFlag{
+			Name:   "docker-image-tags",
+			Usage:  "tag of docker image to use",
+			Value:    &cli.StringSlice{"latest"},
+			EnvVar: "PLUGIN_TAG,PLUGIN_TAGS",
+			FilePath: ".tags"
+		},
 		cli.BoolTFlag{
 			Name:   "start-first",
 			Usage:  "Start new container before stoping old",
