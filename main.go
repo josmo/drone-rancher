@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
 )
 
 type Rancher struct {
-	Url            string `json:"url"`
+	URL            string `json:"url"`
 	AccessKey      string `json:"access_key"`
 	SecretKey      string `json:"secret_key"`
 	Service        string `json:"service"`
