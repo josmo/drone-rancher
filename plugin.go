@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/rancher/go-rancher/client"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	client "github.com/rancher/go-rancher/v2"
 )
 
 type Plugin struct {
@@ -53,7 +54,7 @@ func (p *Plugin) Exec() error {
 
 	var stackId string
 	if wantedStack != "" {
-		environments, err := rancher.Environment.List(&client.ListOpts{})
+		environments, err := rancher.Stack.List(&client.ListOpts{})
 		if err != nil {
 			return errors.New(fmt.Sprintf("Failed to list rancher environments: %s\n", err))
 		}
@@ -81,7 +82,7 @@ func (p *Plugin) Exec() error {
 
 		// Iterate the current services
 		for _, svc := range services.Data {
-			if svc.Name == wantedService && ((wantedStack != "" && svc.EnvironmentId == stackId) || wantedStack == "") {
+			if svc.Name == wantedService && ((wantedStack != "" && svc.StackId == stackId) || wantedStack == "") {
 				service = svc
 				found = true
 				break
