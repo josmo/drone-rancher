@@ -52,62 +52,33 @@ func (p *Plugin) Exec() error {
 		return fmt.Errorf("Failed to create rancher client: %s", err)
 	}
 
-	var stackID string
+	// Prepare service filters for service listing
+	serviceFilters := map[string]interface{}{"name": wantedService}
+
+	// Query stacks with filter name=wantedStack
 	if wantedStack != "" {
-		environments, err := rancher.Stack.List(&client.ListOpts{})
+		stacks, err := rancher.Stack.List(&client.ListOpts{Filters: map[string]interface{}{"name": wantedStack}})
 		if err != nil {
 			return fmt.Errorf("Failed to list rancher environments: %s", err)
 		}
-		for _, env := range environments.Data {
-			if env.Name == wantedStack {
-				stackID = env.Id
-			}
-		}
-		if stackID == "" {
+		if len(stacks.Data) <= 0 {
 			return fmt.Errorf("Unable to find stack %s", wantedStack)
 		}
+		// If found add stackID to serviceFilters
+		serviceFilters["stackId"] = stacks.Data[0].Id
 	}
 
-	// Get the initial set of services
-	services, err := rancher.Service.List(&client.ListOpts{})
-	// Check for an error
+	// Query services with prepared filters
+	services, err := rancher.Service.List(&client.ListOpts{Filters: serviceFilters})
 	if err != nil {
 		return fmt.Errorf("Failed to list rancher services: %s", err)
 	}
-
-	var service client.Service
-	found := false
-	//TODO: find a more elegant and clear way to iterate through the service paging
-	for {
-
-		// Iterate the current services
-		for _, svc := range services.Data {
-			if svc.Name == wantedService && ((wantedStack != "" && svc.StackId == stackID) || wantedStack == "") {
-				service = svc
-				found = true
-				break
-			}
-		}
-		if found {
-			break
-		}
-
-		// Get the next set of services (paginate)
-		if !found {
-			services, err = services.Next()
-			if err != nil {
-				return fmt.Errorf("Failed to list rancher services: %s", err)
-			}
-			if services == nil {
-				break
-			}
-		}
-	}
-
-	if !found {
+	if len(services.Data) <= 0 {
 		return fmt.Errorf("Unable to find service %s", p.Service)
 	}
+	service := services.Data[0]
 
+	// Service is found, proceed with upgrade
 	service.LaunchConfig.ImageUuid = p.DockerImage
 	upgrade := &client.ServiceUpgrade{}
 	upgrade.InServiceStrategy = &client.InServiceUpgradeStrategy{
