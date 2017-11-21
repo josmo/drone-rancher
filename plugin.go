@@ -3,10 +3,11 @@ package main
 import (
 	"errors"
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/rancher/go-rancher/client"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	client "github.com/rancher/go-rancher/v2"
 )
 
 type Plugin struct {
@@ -48,65 +49,36 @@ func (p *Plugin) Exec() error {
 		SecretKey: p.Secret,
 	})
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to create rancher client: %s\n :(", err))
+		return fmt.Errorf("Failed to create rancher client: %s", err)
 	}
 
-	var stackId string
+	// Prepare service filters for service listing
+	serviceFilters := map[string]interface{}{"name": wantedService}
+
+	// Query stacks with filter name=wantedStack
 	if wantedStack != "" {
-		environments, err := rancher.Environment.List(&client.ListOpts{})
+		stacks, err := rancher.Stack.List(&client.ListOpts{Filters: map[string]interface{}{"name": wantedStack}})
 		if err != nil {
-			return errors.New(fmt.Sprintf("Failed to list rancher environments: %s\n", err))
+			return fmt.Errorf("Failed to list rancher environments: %s", err)
 		}
-		for _, env := range environments.Data {
-			if env.Name == wantedStack {
-				stackId = env.Id
-			}
+		if len(stacks.Data) <= 0 {
+			return fmt.Errorf("Unable to find stack %s", wantedStack)
 		}
-		if stackId == "" {
-			return errors.New(fmt.Sprintf("Unable to find stack %s\n", wantedStack))
-		}
+		// If found add stackID to serviceFilters
+		serviceFilters["stackId"] = stacks.Data[0].Id
 	}
 
-	// Get the initial set of services
-	services, err := rancher.Service.List(&client.ListOpts{})
-	// Check for an error
+	// Query services with prepared filters
+	services, err := rancher.Service.List(&client.ListOpts{Filters: serviceFilters})
 	if err != nil {
-		return errors.New(fmt.Sprintf("Failed to list rancher services: %s\n", err))
+		return fmt.Errorf("Failed to list rancher services: %s", err)
 	}
-
-	var service client.Service
-	found := false
-	//TODO: find a more elegant and clear way to iterate through the service paging
-	for {
-
-		// Iterate the current services
-		for _, svc := range services.Data {
-			if svc.Name == wantedService && ((wantedStack != "" && svc.EnvironmentId == stackId) || wantedStack == "") {
-				service = svc
-				found = true
-				break
-			}
-		}
-		if found {
-			break
-		}
-
-		// Get the next set of services (paginate)
-		if !found {
-			services, err = services.Next()
-			if err != nil {
-				return errors.New(fmt.Sprintf("Failed to list rancher services: %s\n", err))
-			}
-			if services == nil {
-				break
-			}
-		}
+	if len(services.Data) <= 0 {
+		return fmt.Errorf("Unable to find service %s", p.Service)
 	}
+	service := services.Data[0]
 
-	if !found {
-		return errors.New(fmt.Sprintf("Unable to find service %s\n", p.Service))
-	}
-
+	// Service is found, proceed with upgrade
 	service.LaunchConfig.ImageUuid = p.DockerImage
 	upgrade := &client.ServiceUpgrade{}
 	upgrade.InServiceStrategy = &client.InServiceUpgradeStrategy{
@@ -119,10 +91,10 @@ func (p *Plugin) Exec() error {
 	upgrade.ToServiceStrategy = &client.ToServiceUpgradeStrategy{}
 	_, err = rancher.Service.ActionUpgrade(&service, upgrade)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to upgrade service %s: %s\n", p.Service, err))
+		return fmt.Errorf("Unable to upgrade service %s: %s", p.Service, err)
 	}
 
-	log.Info(fmt.Sprintf("Upgraded %s to %s\n", p.Service, p.DockerImage))
+	log.Infof("Upgraded %s to %s", p.Service, p.DockerImage)
 	if p.Confirm {
 		srv, err := retry(func() (interface{}, error) {
 			s, e := rancher.Service.ById(service.Id)
@@ -130,20 +102,20 @@ func (p *Plugin) Exec() error {
 				return nil, e
 			}
 			if s.State != "upgraded" {
-				return nil, errors.New(fmt.Sprintf("Service not upgraded: %s", s.State))
+				return nil, fmt.Errorf("Service not upgraded: %s", s.State)
 			}
 			return s, nil
 		}, time.Duration(p.Timeout)*time.Second, 3*time.Second)
 
 		if err != nil {
-			return errors.New(fmt.Sprintf("Error waiting for service upgrade to complete: %s", err))
+			return fmt.Errorf("Error waiting for service upgrade to complete: %s", err)
 		}
 
 		_, err = rancher.Service.ActionFinishupgrade(srv.(*client.Service))
 		if err != nil {
-			return errors.New(fmt.Sprintf("Unable to finish upgrade %s: %s\n", p.Service, err))
+			return fmt.Errorf("Unable to finish upgrade %s: %s", p.Service, err)
 		}
-		log.Info(fmt.Printf("Finished upgrade %s\n", p.Service))
+		log.Infof("Finished upgrade %s", p.Service)
 	}
 	return nil
 }
