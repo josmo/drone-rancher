@@ -11,29 +11,27 @@ import (
 )
 
 type Plugin struct {
-	URL            string
-	Key            string
-	Secret         string
-	Service        string
-	DockerImage    string
-	StartFirst     bool
-	Confirm        bool
-	Timeout        int
-	IntervalMillis int64
-	BatchSize      int64
-	YamlVerified   bool
+	URL                 string
+	Key                 string
+	Secret              string
+	Service             string
+	SidekickDockerImage []string
+	DockerImage         string
+	StartFirst          bool
+	Confirm             bool
+	Timeout             int
+	IntervalMillis      int64
+	BatchSize           int64
+	YamlVerified        bool
 }
 
 func (p *Plugin) Exec() error {
 	log.Info("Drone Rancher Plugin built")
 
-	if p.URL == "" || p.Key == "" || p.Secret == "" {
+	if p.URL == "" || p.Key == "" || p.Secret == "" || p.Service == "" {
 		return errors.New("Eek: Must have url, key, secret, and service definied")
 	}
 
-	if !strings.HasPrefix(p.DockerImage, "docker:") {
-		p.DockerImage = fmt.Sprintf("docker:%s", p.DockerImage)
-	}
 	var wantedService, wantedStack string
 	if strings.Contains(p.Service, "/") {
 		parts := strings.SplitN(p.Service, "/", 2)
@@ -58,6 +56,7 @@ func (p *Plugin) Exec() error {
 	// Query stacks with filter name=wantedStack
 	if wantedStack != "" {
 		stacks, err := rancher.Stack.List(&client.ListOpts{Filters: map[string]interface{}{"name": wantedStack}})
+
 		if err != nil {
 			return fmt.Errorf("Failed to list rancher environments: %s", err)
 		}
@@ -66,6 +65,7 @@ func (p *Plugin) Exec() error {
 		}
 		// If found add stackID to serviceFilters
 		serviceFilters["stackId"] = stacks.Data[0].Id
+
 	}
 
 	// Query services with prepared filters
@@ -77,9 +77,31 @@ func (p *Plugin) Exec() error {
 		return fmt.Errorf("Unable to find service %s", p.Service)
 	}
 	service := services.Data[0]
-
 	// Service is found, proceed with upgrade
-	service.LaunchConfig.ImageUuid = p.DockerImage
+
+	// We want to exit if there is no docker image updates
+	if p.DockerImage == "" && len(p.SidekickDockerImage) <= 0 {
+		return fmt.Errorf("Nothing to upgrade")
+	}
+
+	// Only change value if it's not null.
+	if p.DockerImage != "" {
+		// Add prefix when missing to meet Rancher API requirement
+		service.LaunchConfig.ImageUuid = prepareDockerPrefix(p.DockerImage)
+	}
+
+	// Iterate over provided sidekick flags
+	for _, sidekick := range p.SidekickDockerImage {
+		// Split flag in two from "--sidekick nginx nginx:latest"
+		parts := strings.SplitN(sidekick, " ", 2)
+		wantedSidekick := parts[0]
+		wantedImage := parts[1]
+		for i, s := range service.SecondaryLaunchConfigs {
+			if wantedSidekick == s.Name {
+				service.SecondaryLaunchConfigs[i].ImageUuid = prepareDockerPrefix(wantedImage)
+			}
+		}
+	}
 	upgrade := &client.ServiceUpgrade{}
 	upgrade.InServiceStrategy = &client.InServiceUpgradeStrategy{
 		LaunchConfig:           service.LaunchConfig,
@@ -94,7 +116,6 @@ func (p *Plugin) Exec() error {
 		return fmt.Errorf("Unable to upgrade service %s: %s", p.Service, err)
 	}
 
-	log.Infof("Upgraded %s to %s", p.Service, p.DockerImage)
 	if p.Confirm {
 		srv, err := retry(func() (interface{}, error) {
 			s, e := rancher.Service.ById(service.Id)
@@ -117,10 +138,20 @@ func (p *Plugin) Exec() error {
 		}
 		log.Infof("Finished upgrade %s", p.Service)
 	}
+
+	log.Infof("Upgraded %s to %s", p.Service, p.DockerImage)
+
 	return nil
 }
 
 type retryFunc func() (interface{}, error)
+
+func prepareDockerPrefix(image string) string {
+	if !strings.HasPrefix(image, "docker:") {
+		image = fmt.Sprintf("docker:%s", image)
+	}
+	return image
+}
 
 func retry(f retryFunc, timeout time.Duration, interval time.Duration) (interface{}, error) {
 	finish := time.After(timeout)

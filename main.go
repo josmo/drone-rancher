@@ -8,19 +8,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-type Rancher struct {
-	URL            string `json:"url"`
-	AccessKey      string `json:"access_key"`
-	SecretKey      string `json:"secret_key"`
-	Service        string `json:"service"`
-	Image          string `json:"docker_image"`
-	StartFirst     bool   `json:"start_first"`
-	Confirm        bool   `json:"confirm"`
-	Timeout        int    `json:"timeout"`
-	IntervalMillis int64  `json:"interval_millis"`
-	BatchSize      int64  `json:"batch_size"`
-}
-
 var build string // build number set at compile-time
 
 func main() {
@@ -51,6 +38,11 @@ func main() {
 			Name:   "service",
 			Usage:  "Service to act on",
 			EnvVar: "PLUGIN_SERVICE",
+		},
+		cli.StringSliceFlag{
+			Name:   "sidekick",
+			Usage:  "Service's sidekick name and image separated by the space, supports multiple flags",
+			EnvVar: "PLUGIN_SIDEKICK",
 		},
 		cli.StringFlag{
 			Name:   "docker-image",
@@ -99,17 +91,18 @@ func main() {
 
 func run(c *cli.Context) error {
 	plugin := Plugin{
-		URL:            c.String("url"),
-		Key:            c.String("access-key"),
-		Secret:         c.String("secret-key"),
-		Service:        c.String("service"),
-		DockerImage:    c.String("docker-image"),
-		StartFirst:     c.BoolT("start-first"),
-		Confirm:        c.Bool("confirm"),
-		Timeout:        c.Int("timeout"),
-		IntervalMillis: c.Int64("interval-millis"),
-		BatchSize:      c.Int64("batch-size"),
-		YamlVerified:   c.BoolT("yaml-verified"),
+		URL:                 c.String("url"),
+		Key:                 c.String("access-key"),
+		Secret:              c.String("secret-key"),
+		Service:             c.String("service"),
+		SidekickDockerImage: c.StringSlice("sidekick"),
+		DockerImage:         c.String("docker-image"),
+		StartFirst:          c.BoolT("start-first"),
+		Confirm:             c.Bool("confirm"),
+		Timeout:             c.Int("timeout"),
+		IntervalMillis:      c.Int64("interval-millis"),
+		BatchSize:           c.Int64("batch-size"),
+		YamlVerified:        c.BoolT("yaml-verified"),
 	}
 	return plugin.Exec()
 }
