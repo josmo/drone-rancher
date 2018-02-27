@@ -53,7 +53,7 @@ pipeline:
     image: plugins/docker
     username: josmo
     repo: peloton/drone-rancher
-    tags: [ latest, ${DRONE_TAG##v}, 1.0, 1 ]
+    auto_tag: true
     secrets: [ docker_password ]
     dockerfile: Dockerfile
     when:
@@ -63,7 +63,8 @@ pipeline:
     image: plugins/docker
     username: josmo
     repo: peloton/drone-rancher
-    tags: [ linux-arm64 ]
+    auto_tag: true
+    auto_tag_suffix: linux-arm64
     secrets: [ docker_password ]
     dockerfile: Dockerfile.arm64
     when:
@@ -73,7 +74,8 @@ pipeline:
     image: plugins/docker
     username: josmo
     repo: peloton/drone-rancher
-    tags: [ linux-arm ]
+    auto_tag: true
+    auto_tag_suffix: linux-arm
     secrets: [ docker_password ]
     dockerfile: Dockerfile.arm
     when:
