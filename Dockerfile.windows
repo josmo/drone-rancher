@@ -1,5 +1,4 @@
 FROM microsoft/nanoserver:latest
-MAINTAINER Drone.IO Community <drone-dev@googlegroups.com>
 
 ENV GODEBUG=netdns=go
 

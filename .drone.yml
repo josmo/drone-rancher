@@ -53,12 +53,11 @@ pipeline:
     image: plugins/docker
     username: josmo
     repo: peloton/drone-rancher
-    tags: [ latest, 1.0.0, 1.0, 1 ]
+    tags: [ latest, ${DRONE_TAG##v}, 1.0, 1 ]
     secrets: [ docker_password ]
     dockerfile: Dockerfile
     when:
-      branch: master
-      event: push
+      event: tag
 
   publish_linux_arm64:
     image: plugins/docker
@@ -68,8 +67,7 @@ pipeline:
     secrets: [ docker_password ]
     dockerfile: Dockerfile.arm64
     when:
-      branch: master
-      event: push
+      event: tag
 
   publish_linux_arm:
     image: plugins/docker
@@ -79,8 +77,7 @@ pipeline:
     secrets: [ docker_password ]
     dockerfile: Dockerfile.arm
     when:
-      branch: master
-      event: push
+      event: tag
 
   # publish_windows_amd64:
   #   image: plugins/docker
