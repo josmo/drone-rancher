@@ -10,91 +10,82 @@ pipeline:
       - dep ensure
 
   test:
-    image: golang:1.9
+    image: golang:1.10
     commands:
-      - go vet
-      - go test -cover -coverprofile=coverage.out
+    - go vet
+    - go test -cover -coverprofile=coverage.out
 
   build_linux_amd64:
-    image: golang:1.9
+    image: golang:1.10
     group: build
     environment:
-      - GOOS=linux
-      - GOARCH=amd64
-      - CGO_ENABLED=0
+    - GOOS=linux
+    - GOARCH=amd64
+    - CGO_ENABLED=0
     commands:
-      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/drone-rancher
+    - |
+      if test "${DRONE_TAG}" = ""; then
+        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
+      else
+        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
+      fi
 
   build_linux_arm64:
-    image: golang:1.9
+    image: golang:1.10
     group: build
     environment:
-      - GOOS=linux
-      - GOARCH=arm64
-      - CGO_ENABLED=0
+    - GOOS=linux
+    - GOARCH=arm64
+    - CGO_ENABLED=0
     commands:
-      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/drone-rancher
+    - |
+      if test "${DRONE_TAG}" = ""; then
+        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
+      else
+        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
+      fi
 
   build_linux_arm:
-    image: golang:1.9
+    image: golang:1.10
     group: build
     environment:
-      - GOOS=linux
-      - GOARCH=arm
-      - CGO_ENABLED=0
-      - GOARM=7
+    - GOOS=linux
+    - GOARCH=arm
+    - CGO_ENABLED=0
+    - GOARM=7
     commands:
-      - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/drone-rancher
-
-  # build_windows_amd64:
-  #   image: golang:1.9-nanoserver
-  #   group: build
-  #   environment:
-  #     - GOOS=windows
-  #     - GOARCH=amd64
-  #     - CGO_ENABLED=0
-  #   commands:
-  #     - go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/windows/amd64/drone-webhook
+    - |
+      if test "${DRONE_TAG}" = ""; then
+        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
+      else
+        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
+      fi
 
   publish_linux_amd64:
     image: plugins/docker
-    username: josmo
-    repo: peloton/drone-rancher
+    group: publish
     auto_tag: true
-    secrets: [ docker_password ]
+    secrets: [ docker_password, docker_username, plugin_repo ]
     dockerfile: Dockerfile
     when:
       event: [ tag, push ]
 
   publish_linux_arm64:
     image: plugins/docker
-    username: josmo
-    repo: peloton/drone-rancher
+    group: publish
     auto_tag: true
     auto_tag_suffix: linux-arm64
-    secrets: [ docker_password ]
+    secrets: [ docker_password, docker_username, plugin_repo ]
     dockerfile: Dockerfile.arm64
     when:
       event: [ tag, push ]
 
   publish_linux_arm:
     image: plugins/docker
-    username: josmo
-    repo: peloton/drone-rancher
+    group: publish
     auto_tag: true
     auto_tag_suffix: linux-arm
-    secrets: [ docker_password ]
+    secrets: [ docker_password, docker_username, plugin_repo ]
     dockerfile: Dockerfile.arm
     when:
       event: [ tag, push ]
-
-  # publish_windows_amd64:
-  #   image: plugins/docker
-  #   username: josmo
-  #   repo: peloton/drone-rancher
-  #   tags: [ windows-amd64 ]
-  #   secrets: [ docker_password ]
-  #   dockerfile: Dockerfile.windows
-  #   when:
-  #     branch: master
-  #     event: push

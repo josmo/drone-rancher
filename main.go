@@ -8,14 +8,17 @@ import (
 	"github.com/urfave/cli"
 )
 
-var build string // build number set at compile-time
+var (
+	version = "0.0.0"
+	build   = "0"
+)
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "rancher publish"
 	app.Usage = "rancher publish"
 	app.Action = run
-	app.Version = fmt.Sprintf("1.0.0+%s", build)
+	app.Version = fmt.Sprintf("%s+%s", version, build)
 
 	app.Flags = []cli.Flag{
 
