@@ -1,91 +1,114 @@
+kind: pipeline
+name: default
+
 workspace:
   base: /go
   path: src/github.com/josmo/drone-rancher
-pipeline:
-  deps:
-    image: golang:1.10
-    pull: true
-    commands:
-      - go get -u github.com/golang/dep/cmd/dep
-      - dep ensure
+steps:
+- name: deps
+  image: golang:1.10
+  pull: true
+  commands:
+  - go get -u github.com/golang/dep/cmd/dep
+  - dep ensure
 
-  test:
-    image: golang:1.10
-    commands:
-    - go vet
-    - go test -cover -coverprofile=coverage.out
+- name: test
+  image: golang:1.10
+  depends_on:
+  - deps
+  commands:
+  - go vet
+  - go test -cover -coverprofile=coverage.out
 
-  build_linux_amd64:
-    image: golang:1.10
-    group: build
-    environment:
-    - GOOS=linux
-    - GOARCH=amd64
-    - CGO_ENABLED=0
-    commands:
-    - |
-      if test "${DRONE_TAG}" = ""; then
-        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
-      else
-        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
-      fi
+- name: build_linux_amd64
+  image: golang:1.10
+  depends_on: [ test]
+  environment:
+    GOOS: linux
+    GOARCH: amd64
+    CGO_ENABLED: 0
+  commands:
+  - |
+    if test "${DRONE_TAG}" = ""; then
+      go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
+    else
+      go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/amd64/${DRONE_REPO_NAME}
+    fi
 
-  build_linux_arm64:
-    image: golang:1.10
-    group: build
-    environment:
-    - GOOS=linux
-    - GOARCH=arm64
-    - CGO_ENABLED=0
-    commands:
-    - |
-      if test "${DRONE_TAG}" = ""; then
-        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
-      else
-        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
-      fi
+- name: build_linux_arm64
+  image: golang:1.10
+  depends_on: [ test ]
+  environment:
+    GOOS: linux
+    GOARCH: arm64
+    CGO_ENABLED: 0
+  commands:
+  - |
+    if test "${DRONE_TAG}" = ""; then
+      go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
+    else
+      go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm64/${DRONE_REPO_NAME}
+    fi
 
-  build_linux_arm:
-    image: golang:1.10
-    group: build
-    environment:
-    - GOOS=linux
-    - GOARCH=arm
-    - CGO_ENABLED=0
-    - GOARM=7
-    commands:
-    - |
-      if test "${DRONE_TAG}" = ""; then
-        go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
-      else
-        go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
-      fi
+- name: build_linux_arm
+  image: golang:1.10
+  depends_on: [ test ]
+  environment:
+    GOOS: linux
+    GOARCH: arm
+    CGO_ENABLED: 0
+    GOARM: 7
+  commands:
+  - |
+    if test "${DRONE_TAG}" = ""; then
+      go build -v -ldflags "-X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
+    else
+      go build -v -ldflags "-X main.version=${DRONE_TAG##v} -X main.build=${DRONE_BUILD_NUMBER}" -a -o release/linux/arm/${DRONE_REPO_NAME}
+    fi
 
-  publish_linux_amd64:
-    image: plugins/docker
-    group: publish
+- name: publish_linux_amd64
+  image: plugins/docker
+  depends_on: [ build_linux_amd64 ]
+  settings:
     auto_tag: true
-    secrets: [ docker_password, docker_username, plugin_repo ]
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo:
+      from_secret: plugin_repo
     dockerfile: Dockerfile
-    when:
-      event: [ tag, push ]
+  when:
+    event: [ tag, push ]
 
-  publish_linux_arm64:
-    image: plugins/docker
-    group: publish
+- name: publish_linux_arm64
+  image: plugins/docker
+  depends_on: [ build_linux_arm64 ]
+  settings:
     auto_tag: true
     auto_tag_suffix: linux-arm64
-    secrets: [ docker_password, docker_username, plugin_repo ]
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo:
+      from_secret: plugin_repo
     dockerfile: Dockerfile.arm64
-    when:
-      event: [ tag, push ]
+  when:
+    event: [ tag, push ]
 
-  publish_linux_arm:
-    image: plugins/docker
-    group: publish
+- name: publish_linux_arm
+  image: plugins/docker
+  depends_on: [ build_linux_arm ]
+  settings:
     auto_tag: true
     auto_tag_suffix: linux-arm
-    secrets: [ docker_password, docker_username, plugin_repo ]
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo:
+      from_secret: plugin_repo
     dockerfile: Dockerfile.arm
-    when:
-      event: [ tag, push ]
+  when:
+    event: [ tag, push ]
