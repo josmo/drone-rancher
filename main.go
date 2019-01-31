@@ -25,7 +25,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "url",
 			Usage:  "url to the rancher api",
-			EnvVar: "PLUGIN_URL",
+			EnvVar: "PLUGIN_URL, RANCHER_URL",
 		},
 		cli.StringFlag{
 			Name:   "access-key",

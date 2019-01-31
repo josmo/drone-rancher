@@ -1,7 +1,6 @@
 # drone-rancher
 
 [![Build Status](https://cloud.drone.io/api/badges/josmo/drone-rancher/status.svg)](https://cloud.drone.io/josmo/drone-rancher)
-[![Join the chat at https://gitter.im/drone/drone](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/drone/drone)
 [![Go Doc](https://godoc.org/github.com/josmo/drone-rancher?status.svg)](http://godoc.org/github.com/josmo/drone-rancher)
 [![Go Report](https://goreportcard.com/badge/github.com/josmo/drone-rancher)](https://goreportcard.com/report/github.com/josmo/drone-rancher)
 [![](https://images.microbadger.com/badges/image/peloton/drone-rancher.svg)](https://microbadger.com/images/peloton/drone-rancher "Get your own image badge on microbadger.com")
