@@ -19,7 +19,7 @@ The following is a sample Rancher configuration in your `.drone.yml` file:
 ```yaml
 deploy:
   rancher:
-    image: peloton/drone-rancher
+    image: pelotech/drone-rancher
     url: https://example.rancher.com
     access_key: 1234567abcdefg
     secret_key: abcdefg1234567
