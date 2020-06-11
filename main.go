@@ -85,6 +85,11 @@ func main() {
 			Usage:  "Ensure the yaml was signed",
 			EnvVar: "DRONE_YAML_VERIFIED",
 		},
+		cli.StringFlag{
+			Name:   "environment",
+			Usage:  "rancher environment to act on",
+			EnvVar: "PLUGIN_ENVIRONMENT",
+		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
@@ -106,6 +111,7 @@ func run(c *cli.Context) error {
 		IntervalMillis:      c.Int64("interval-millis"),
 		BatchSize:           c.Int64("batch-size"),
 		YamlVerified:        c.BoolT("yaml-verified"),
+		Environment:         c.String("environment"),
 	}
 	return plugin.Exec()
 }
