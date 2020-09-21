@@ -23,6 +23,7 @@ type Plugin struct {
 	IntervalMillis      int64
 	BatchSize           int64
 	YamlVerified        bool
+	Environment         string
 }
 
 func (p *Plugin) Exec() error {
@@ -53,9 +54,28 @@ func (p *Plugin) Exec() error {
 	// Prepare service filters for service listing
 	serviceFilters := map[string]interface{}{"name": wantedService}
 
+	if len(p.Environment) >= 1 {
+		environments, err := rancher.Account.List(&client.ListOpts{Filters: map[string]interface{}{"name": p.Environment}})
+
+		if err != nil {
+			return fmt.Errorf("Failed to find given rancher environment: %s", err)
+		}
+		if len(environments.Data) <= 0 {
+			return fmt.Errorf("Unable to find environment %s", p.Environment)
+		}
+
+		// If found add environmentID to serviceFilters
+		serviceFilters["accountId"] = environments.Data[0].Id
+	}
+
 	// Query stacks with filter name=wantedStack
 	if wantedStack != "" {
 		stacks, err := rancher.Stack.List(&client.ListOpts{Filters: map[string]interface{}{"name": wantedStack}})
+
+		// If environment is defined re-query the API with the accountId
+		if len(p.Environment) >= 1 {
+			stacks, err = rancher.Stack.List(&client.ListOpts{Filters: map[string]interface{}{"accountId": serviceFilters["accountId"], "name": wantedStack}})
+		}
 
 		if err != nil {
 			return fmt.Errorf("Failed to list rancher environments: %s", err)
