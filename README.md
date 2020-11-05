@@ -5,7 +5,7 @@
 [![Go Report](https://goreportcard.com/badge/github.com/josmo/drone-rancher)](https://goreportcard.com/report/github.com/josmo/drone-rancher)
 [![](https://images.microbadger.com/badges/image/pelotech/drone-rancher.svg)](https://microbadger.com/images/pelotech/drone-rancher "Get your own image badge on microbadger.com")
 
-Drone plugin to deploy or update a project on Rancher. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
+Drone plugin to deploy or update a project on Rancher 1.x only. For the usage information and a listing of the available options please take a look at [the docs](DOCS.md).
 
 ## Binary
 
